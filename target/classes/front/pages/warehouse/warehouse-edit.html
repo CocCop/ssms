@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>仓库-修改</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <label class="layui-form-label">
+                    <span class="x-red">*</span>分配管理者</label>
+                <div class="layui-input-inline">
+                    <select v-model="warehouseManagerId" style="width:190px; height: 30px; border: grey">
+                        <option v-for="ss in normalManagerList" :value="ss.managerId">
+                            {{ ss.managerId }} -- {{ss.managerName}}
+                        </option>
+                    </select>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>仓库名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_user1name1" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="warehouseName"></div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符</div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>仓库信息</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_usern1am2e" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="warehouseMessage"></div>
+                    <div class="layui-form-mid layui-word-aux">商品价格</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>仓库状态</label>
+                    <div class="layui-input-inline">
+                        <select v-model="warehouseState" style="width:190px; height: 30px; border: grey">
+                            <option>1</option>
+                            <option> 0</option>
+                        </select>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="edit">修改</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" onClick="javascript :history.back(-1);">返回上一页</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    warehouseId: null,
+                    warehouseManagerId: null,
+                    warehouseName: null,
+                    warehouseMessage: null,
+                    warehouseState: null,
+                    normalManagerList: null,
+
+                },
+                methods: {
+                    edit() {
+                        //首先校验数据合法性
+                        if (vm.warehouseName === null || vm.warehouseName === "" || vm.warehouseName.length < 2 || vm.warehouseName.length > 200) {
+                            layer.alert("名字不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.warehouseMessage === null || vm.warehouseMessage === "" || vm.warehouseMessage.length < 2 || vm.warehouseMessage.length > 200) {
+                            layer.alert("信息不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");
+                            //开始axios通信
+                            var jsonD = {
+                                warehouseId: vm.warehouseId,
+                                warehouseName: vm.warehouseName,
+                                warehouseMessage: vm.warehouseMessage,
+                                warehouseState: vm.warehouseState,
+                                warehouseManagerId: vm.warehouseManagerId
+                            }
+                            axios.post("../../../warehouse/edit", jsonD)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据新增成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+
+
+                    },
+                    getAllNormalManagers() {
+                        axios.post("../../../manager/getAllNormalManagers")
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.normalManagerList = response.data.data;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    },
+                    getWarehouseById(aimId) {
+                        var jsonD = {
+                            id: aimId
+                        }
+                        axios.post("../../../warehouse/getWarehouseById", jsonD)
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.warehouseId = response.data.data.warehouseId;
+                                    vm.warehouseName = response.data.data.warehouseName;
+                                    vm.warehouseMessage = response.data.data.warehouseMessage;
+                                    vm.warehouseState = response.data.data.warehouseState;
+                                    vm.warehouseManagerId = response.data.data.warehouseManagerId;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    },
+                    //获取url参数
+                    url1(name) {
+                        //获取上一地址中的get参数
+                        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                        var r = window.location.search.substr(1).match(reg);
+                        if (r != null)
+                            return unescape(r[2]);
+                        return null;
+                    },
+                },
+                mounted: function () {
+                    //查询所有普通管理员的信息
+                    this.getAllNormalManagers();
+                    //获取要求改的目标信息
+                    this.getWarehouseById(this.url1("id"));
+                }
+            });
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html class="x-admin-sm">
+    <head>
+        <meta charset="UTF-8">
+        <title>供应链管理系统</title>
+        <link rel="stylesheet" href="../css/font.css">
+        <link rel="stylesheet" href="../css/login.css">
+        <link rel="stylesheet" href="../css/xadmin.css">
+        <script src="../js/vue2.7min.js"></script>
+        <script src="../js/axios.min.js"></script>
+    </head>
+    <body class="login-bg">
+
+        <div class="login layui-anim layui-anim-up" id="app">
+            <div class="message">供应链管理系统</div>
+            <form method="post" action="red/login" class="layui-form">
+                <input lay-verify="required" placeholder="用户名" type="text" class="layui-input"
+                       v-model="managerName">
+                <hr class="hr15">
+                <input lay-verify="required" placeholder="密码  " type="password" class="layui-input"
+                       v-model="managerPassword">
+                <hr class="hr15">
+                <input value="登录" lay-submit lay-filter="login" style="width:100%;" type="button"
+                       @click="login">
+                <hr class="hr20">
+                <!--提示信息-->
+                <div class="layui-input" v-text="msg"></div>
+            </form>
+        </div>
+
+
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    managerName: "admin",
+                    managerPassword: 123456,
+                    msg: null
+                },
+                methods: {
+                    login() {
+                        //参数判断
+                        if(this.managerName===null || this.managerName===""){
+                            this.msg="账号不可为空"
+                        }else if(this.managerPassword===null || this.managerPassword===""){
+                            this.msg="密码不可为空"
+                        }else{
+                            var jsonD = {
+                                managerName: this.managerName,
+                                managerPassword: this.managerPassword
+                            }
+                            axios.post("../../manager/login", jsonD)
+                                .then(function (response) {
+                                    console.log(response);
+                                    vm.msg = response.data.msg;
+                                    //判断是否登录
+                                    if (response.data.code === 1) {
+                                        //页面跳转
+                                        window.location.href = './index/index.html';
+                                    } else {
+                                        vm.msg
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+                                })
+                        }
+                    },
+                    //获取url参数
+                    url1: function (name) {
+                        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                        var r = window.location.search.substr(1).match(reg);
+                        if (r != null)
+                            return unescape(r[2]);
+                        return null;
+                    }
+                }, mounted: function () {
+                    //获取可能存在的提示信息
+                    msg = this.url1("msg");
+                }
+            });
+        </script>
+        <!-- 底部结束 -->
+    </body>
+</html>

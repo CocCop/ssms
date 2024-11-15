@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>供应商信息展示页面</title>
+        <meta name="renderer" content="webkit"/>
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="x-nav">
+            <a
+                    class="layui-btn layui-btn-small"
+                    style="line-height: 1.6em; margin-top: 3px; float: right"
+                    onclick="location.reload()"
+                    title="刷新">
+                <i class="layui-icon layui-icon-refresh" style="line-height: 30px"></i></a>
+        </div>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card" id="app">
+                        <div class="layui-card-header">
+                            <button
+                                    class="layui-btn"
+                                    v-show="managerLevel===0"
+                                    onclick="xadmin.open('添加用户','./manager-add.html',600,400)">
+                                <i class="layui-icon"></i>添加
+                            </button>
+                        </div>
+                        <div class="layui-card-body layui-table-body layui-table-main">
+                            <table class="layui-table layui-form">
+                                <thead>
+                                <tr>
+                                    <th style="">编号</th>
+                                    <th>ID</th>
+                                    <th>头像</th>
+                                    <th>账号</th>
+                                    <th>真实姓名</th>
+                                    <th>性别</th>
+                                    <th>电话</th>
+                                    <th>状态</th>
+                                    <th>权限</th>
+                                    <th>创建时间</th>
+                                    <th>修改时间</th>
+                                    <th>创建者</th>
+                                    <th>修改者</th>
+                                    <th>操作</th>
+
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <!--模板开始-->
+                                <tr v-for="(item , index) in records">
+                                    <td>{{index+1}}</td>
+                                    <td v-text="item.managerId"></td>
+                                    <!--                                    <td v-text="item.managerImage"></td>-->
+                                    <td>
+                                        <img :src="item.managerImage" alt="error"/>
+                                    </td>
+                                    <td v-text="item.managerName"></td>
+                                    <td v-text="item.managerRealName"></td>
+                                    <td v-text="item.managerSex"></td>
+                                    <td v-text="item.managerPhone"></td>
+                                    <td class="td-status">
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="managerLevel===0 && item.managerState===1 && item.managerLevel!==0"
+                                              style="background-color: green"
+                                              @click="changeState(item.managerId)">已启用</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="managerLevel===0 && item.managerState!==1 && item.managerLevel!==0"
+                                              style="background-color: tomato"
+                                              @click="changeState(item.managerId)">已禁用</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="managerLevel===0 && item.managerLevel===0"
+                                              style="background-color: tomato">超级管理员账号不可以修改</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="managerLevel!==0"
+                                              style="background-color: orange">启用</span>
+                                    </td>
+                                    <td>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="item.managerLevel===0"
+                                              style="background-color: slateblue">超级管理员</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="item.managerLevel===1"
+                                              style="background-color: orange">普通管理员</span>
+                                    </td>
+                                    <td v-text="item.createTime"></td>
+                                    <td v-text="item.updateTime"></td>
+                                    <td v-text="item.createUser"></td>
+                                    <td v-text="item.updateUser"></td>
+                                    <td class="td-manage">
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="vm.managerLevel===0 && item.managerLevel!==0"
+                                              style="background-color: orange"
+                                              @click="edit(item.managerId)">编辑</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="vm.managerLevel===0 && item.managerLevel!==0"
+                                              style="background-color: red"
+                                              @click="deleteById(item.managerId)">删除</span>
+                                        <span class="layui-btn layui-btn-normal layui-btn-mini"
+                                              v-if="vm.managerLevel===0 && item.managerLevel===0"
+                                              style="background-color: red">超级管理员账号不可以修改</span>
+                                    </td>
+                                </tr>
+                                <!--模板结束-->
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--分页-->
+                        <div class="layui-card-body">
+                            <div class="page">
+                                <div>
+                                    <a class="prev"
+                                       @click="getPage('-')">&lt;&lt;</a>
+                                    <a class="num" v-text="current-1" v-if="current>1"
+                                       @click="getPage('-')"></a>
+
+                                    <span class="current" v-text="current"></span>
+
+                                    <a class="num" v-text="current+1" v-if="current<pages"
+                                       @click="getPage('+')"></a>
+                                    <a class="num" v-text="pages" v-if="current+1 < pages"
+                                       @click="getPage('max')"></a>
+
+                                    <a class="next"
+                                       @click="getPage('+')">&gt;&gt;</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    //Manager信息
+                    managerId: null,
+                    managerName: null,
+                    managerPassword: null,
+                    managerRealName: null,
+                    managerSex: null,
+                    managerPhone: null,
+                    managerState: null,
+                    managerLevel: null,
+                    //分页属性
+                    current: 1,
+                    records: null,
+                    total: null,
+                    size: null,
+                    pages: null
+
+                },
+                methods: {
+                    //获取管理员信息
+                    getManager() {
+                        axios.post("../../../manager/getManager")
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.managerId = response.data.data.managerId;
+                                    vm.managerName = response.data.data.managerName
+                                    vm.managerPassword = response.data.data.managerPassword
+                                    vm.managerRealName = response.data.data.managerRealName
+                                    vm.managerSex = response.data.data.managerSex
+                                    vm.managerPhone = response.data.data.managerPhone
+                                    vm.managerState = response.data.data.managerState
+                                    vm.managerLevel = response.data.data.managerLevel
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+                    },
+                    getPage(str) {
+                        var jsonD = null;
+                        if (str === "first") {
+                            //默认查询第一页
+                            jsonD = {num1: 1}
+                        } else {
+                            //不是第一次
+                            var aimCurrent = null;
+                            if (vm === null || vm.current === null) {
+                                aimCurrent = 1;
+                            } else {
+                                aimCurrent = vm.current;
+                            }
+                            //判断参数操作符好
+                            if (str === '-') {
+                                if (vm.current === 1) {
+                                    aimCurrent = 1;
+                                } else {
+                                    aimCurrent = aimCurrent - 1;
+                                }
+                            } else if (str === '+') {
+                                if (vm.current < vm.pages) {
+                                    aimCurrent = aimCurrent + 1;
+                                } else {
+                                    aimCurrent = vm.pages;
+                                }
+                            } else if (str === 'max') {
+                                aimCurrent = vm.pages;
+                            }
+                            jsonD = {num1: aimCurrent}
+                        }
+                        axios.post("../../../manager/getPage", jsonD)
+                            .then(function (response) {
+                                vm.current = response.data.data.current;
+                                vm.total = response.data.data.total;
+                                vm.size = response.data.data.size;
+                                vm.pages = response.data.data.pages;
+                                //处理records里面的数据
+
+                                for (var i = 0; i < response.data.data.records.length; ++i) {
+                                    response.data.data.records[i].managerImage = "../../../pc/managerImage/" + response.data.data.records[i].managerImage;
+                                }
+                                vm.records = response.data.data.records;
+                                console.log(vm.records)
+
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    },
+                    changeState(aimId) {
+                        //修改管理员状态
+                        if (vm.managerLevel !== 0) {
+                            layer.alert("权限不足只有超级管理员可以哦", {
+                                icon: 6,
+                            });
+                        } else {
+                            console.log("打印manager-list页面，changeState方法的参数aimId = {}", aimId);
+                            var jsonD = {id: aimId};
+                            axios.post("../../../manager/changeState", jsonD).then(
+                                function (response) {
+                                    //数据保存到vue全局
+                                    if (response.data.code === 1) {
+                                        xadmin.father_reload();
+                                    }
+                                },
+                                function (err) {
+                                    console.log(err);
+                                }
+                            );
+                        }
+
+                    },
+                    edit(id) {
+                        window.location.href = './manager-edit.html?id=' + id;
+                    },
+                    deleteById(id) {
+                        //修改管理员状态
+                        var jsonD = {id: id}
+                        axios.post("../../../manager/deleteById", jsonD)
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    xadmin.father_reload()
+
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+                    }
+                },
+                mounted: function () {
+                    //查询管理员信息
+                    this.getManager();
+                    //获取分页数据
+                    this.getPage("first");
+                }
+            });
+        </script>
+    </body>
+
+</html>

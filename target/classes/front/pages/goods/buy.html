@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>商品-入库</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+                <label for="L_username" class="layui-form-label">
+                    <span class="x-red">*</span>可选仓库</label>
+
+                <div class="layui-input-inline">
+                    <select v-model="buyWarehouseId" style="width:190px; height: 30px; border: grey">
+                        <option v-for="ss in warehouseList" :value="ss.warehouseId">
+                            {{ ss.warehouseId }} -- {{ss.warehouseName}}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>入库数量</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_username" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="buyNumber"></div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="buy">入库</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" onClick="javascript :history.back(-1);">返回上一页</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    buyId: null,
+                    buyMasterId: null,
+                    buyGoodsId: null,
+                    buyWarehouseId: null,
+                    warehouseList: null,
+                    buyNumber: null,
+                },
+                methods: {
+                    //获取url参数
+                    url1(name) {
+                        //获取上一地址中的get参数
+                        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                        var r = window.location.search.substr(1).match(reg);
+                        if (r != null)
+                            return unescape(r[2]);
+                        return null;
+                    },
+                    getAllWarehouseByLevel() {
+                        axios.post("../../../warehouse/getAllWarehouseByLevel")
+                            .then(function (response) {
+                                console.log(response)
+                                //数据保存到vue全局
+                                //Manager信息
+                                vm.warehouseList = response.data;
+
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+                    },
+                    buy() {
+                        //首先校验数据合法性
+                        if (vm.buyNumber === null || vm.buyNumber === "") {
+                            layer.alert("数量不可为空哦", {
+                                icon: 6
+                            })
+                        } else if (vm.buyWarehouseId == null) {
+                            layer.alert("仓库不可为空哦", {
+                                icon: 6
+                            })
+                        } else {
+                            //开始axios通信
+                            var jsonD = {
+                                buyGoodsId:vm.buyGoodsId,
+                                buyNumber: vm.buyNumber,
+                                buyWarehouseId: vm.buyWarehouseId,
+                            }
+                            axios.post("../../../buy/add", jsonD)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("商品入库成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+
+
+                    }
+                },
+                mounted: function () {
+                    //入库商品id
+                    this.buyGoodsId = this.url1("id");
+                    //权限内可选仓库
+                    this.getAllWarehouseByLevel();
+
+
+                }
+            });
+        </script>
+    </body>
+
+</html>

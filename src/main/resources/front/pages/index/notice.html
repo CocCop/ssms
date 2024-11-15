@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="x-admin-sm" lang="">
+    <head>
+        <meta charset="UTF-8">
+        <title>后台登录-X-admin2.2</title>
+        <meta name="renderer" content="webkit|ie-comp|ie-stand">
+        <link rel="stylesheet" href="../../css/font.css">
+        <link rel="stylesheet" href="../../css/xadmin.css">
+        <link href="test.css" type="text/css" rel="stylesheet">
+
+        <script src="../../js/axios.min.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+    </head>
+    <body>
+
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    //Manager信息
+                    noticeId: null,
+                    noticeTitle: null,
+                    noticeMessage: null,
+                    noticeTop3: null,
+                },
+                methods: {
+                    //登出功能
+                    getNotice() {
+                        axios.post("../../../notice/getLastOne")
+                            .then(function (response) {
+                                console.log(response);
+                                vm.msg = response.data.msg;
+                                //判断是否登录
+                                if (response.data.code === 1) {
+                                    //页面跳转
+                                    vm.noticeId = response.data.data.noticeId;
+                                    vm.noticeTitle = response.data.data.noticeTitle;
+                                    vm.noticeMessage = response.data.data.noticeMessage;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+                    },
+                },
+                mounted: function () {
+                    this.getNotice();
+                }
+            })
+        </script>
+    </body>
+</html>

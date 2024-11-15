@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>仓库-修改</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <label class="layui-form-label">
+                    <span class="x-red">*</span>选择消费者</label>
+                <div class="layui-input-inline">
+                    <select v-model="sellCustomerId" style="width:190px; height: 30px; border: grey">
+                        <option v-for="ss in customerList" :value="ss.customerId">
+                            {{ ss.customerId }} -- {{ss.customerName}}
+                        </option>
+                    </select>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>出库数量</label>
+                    <div class="layui-input-inline">
+                        <input type="number" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="sellNumber"></div>
+                    <div class="layui-form-mid layui-word-aux">数量最大不可超过{{goodsMaxNumber}}</div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="sell">出库</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" onClick="javascript :history.back(-1);">返回上一页</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    warehouseId: null,
+                    goodsId: null,
+                    goodsMaxNumber: null,
+                    //消费者列表
+                    customerList:null,
+                    //sell信息
+                    sellCustomerId:null,
+                    sellNumber:null,
+
+
+                },
+                methods: {
+                    sell() {
+                        //首先校验数据合法性
+                        if (vm.sellCustomerId === null || vm.sellCustomerId === "" ) {
+                            layer.alert("消费者名字不可为空哦", {
+                                icon: 6
+                            })
+                        } else if (vm.sellNumber === null || vm.sellNumber === "" || parseInt(vm.sellNumber)<=0 || parseInt(vm.sellNumber)>parseInt(vm.goodsMaxNumber)) {
+                            layer.alert("出库数量不合法哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");
+                            //开始axios通信
+                            var jsonD = {
+                                sellGoodsId:vm.goodsId,
+                                sellWarehouseId:vm.warehouseId,
+                                sellNumber:vm.sellNumber,
+                                sellCustomerId:vm.sellCustomerId,
+                            }
+                            axios.post("../../../sell/add", jsonD)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据新增成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+
+
+                    },
+                    //获取url参数
+                    url1(name) {
+                        //获取上一地址中的get参数
+                        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                        var r = window.location.search.substr(1).match(reg);
+                        if (r != null)
+                            return unescape(r[2]);
+                        return null;
+                    },
+                    getAllCustomer() {
+                        axios.post("../../../customer/getAllCustomer")
+                            .then(function (response) {
+                                vm.customerList = response.data.data;
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    }
+                },
+                mounted: function () {
+                    //查询所有消费者信息
+                    this.getAllCustomer();
+                    //获取url中的仓库与货物id
+                    this.goodsId = this.url1("goods_id")
+                    this.warehouseId = this.url1("warehouse_id")
+                    this.goodsMaxNumber = this.url1("goods_number")
+
+                }
+            });
+        </script>
+    </body>
+
+</html>

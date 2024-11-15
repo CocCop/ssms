@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>仓库-新增</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>顾客名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="customerName"></div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>顾客电话</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="customerPhone"></div>
+                    <div class="layui-form-mid layui-word-aux">11位电话</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>顾客信息</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="customerMessage"></div>
+                    <div class="layui-form-mid layui-word-aux">顾客信息</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>顾客地址</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="customerAddress"></div>
+                    <div class="layui-form-mid layui-word-aux">顾客地址</div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="add">增加</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    customerName: null,
+                    customerPhone: null,
+                    customerAddress: null,
+                    customerMessage: null,
+                    customerId: null,
+                },
+                methods: {
+                    add() {
+                        //首先校验数据合法性
+                        if (vm.customerName === null || vm.customerName === "" || vm.customerName.length < 2 || vm.customerName.length > 200) {
+                            layer.alert("名字不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.customerPhone === null || vm.customerPhone === "" || vm.customerPhone.length !== 11) {
+                            layer.alert("不可为空且长度11哦", {
+                                icon: 6
+                            })
+                        } else if (vm.customerAddress === null || vm.customerAddress === "" || vm.customerAddress.length < 2 || vm.customerAddress.length > 200) {
+                            layer.alert("不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.customerMessage === null || vm.customerMessage === "" || vm.customerMessage.length < 2 || vm.customerMessage.length > 200) {
+                            layer.alert("不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");
+                            //开始axios通信
+                            var jsonData = {
+                                customerName: vm.customerName,
+                                customerPhone: vm.customerPhone,
+                                customerAddress: vm.customerAddress,
+                                customerMessage: vm.customerMessage
+                            }
+                            axios.post("../../../customer/add", jsonData)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据新增成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+
+
+                    }
+                }
+            });
+        </script>
+    </body>
+
+</html>

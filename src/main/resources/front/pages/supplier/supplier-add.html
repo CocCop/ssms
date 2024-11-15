@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>供应商-新增</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <!--只有超级管理员才可以设置所属供应商id-->
+                <div class="layui-input-inline" v-if="managerLevel===0">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>分配的管理员</label>
+                    <select v-model="belongManagerId" style="width:190px; height: 30px; border: grey"
+                            v-if="managerLevel===0">
+                        <option v-for="ss in normalManagerList" :value="ss.managerId">
+                            {{ ss.managerId }} -- {{ss.managerName}}
+                        </option>
+                    </select>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>供应商名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="supplierName"></div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>供应商电话</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="realName" autocomplete="off"
+                               class="layui-input"
+                               v-model="supplierPhone"></div>
+                    <div class="layui-form-mid layui-word-aux">11位电话</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>地址</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="realName" autocomplete="off"
+                               class="layui-input"
+                               v-model="supplierAddress"></div>
+                    <div class="layui-form-mid layui-word-aux">地址信息</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>信息</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="realName" autocomplete="off"
+                               class="layui-input"
+                               v-model="supplierMessage"></div>
+                    <div class="layui-form-mid layui-word-aux">备注信息</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>邮箱</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="realName" autocomplete="off"
+                               class="layui-input"
+                               v-model="supplierEmail"></div>
+                    <div class="layui-form-mid layui-word-aux">邮箱信息</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span class="x-red">*</span>状态</label>
+                    <div class="layui-input-inline">
+                        <select v-model="supplierState" style="width:190px; height: 30px; border: grey">
+                            <option>1</option>
+                            <option>0</option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">1启用 / 0禁用</div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="add">增加</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    //Manager信息
+                    managerId: null,
+                    managerName: null,
+                    managerPassword: null,
+                    managerRealName: null,
+                    managerSex: null,
+                    managerPhone: null,
+                    managerState: null,
+                    managerLevel: null,
+                    //普通供应商List信息
+                    normalManagerList: null,
+                    //供应商属性
+                    supplierId: null,
+                    belongManagerId: null,
+                    supplierPhone: null,
+                    supplierName: null,
+                    supplierAddress: null,
+                    supplierMessage: null,
+                    supplierEmail: null,
+                    supplierState: null,
+
+                },
+                methods: {
+                    add() {
+                        vm.supplierManagerId = vm.id;
+                        //首先校验数据合法性
+                        if (vm.managerLevel===0 && vm.belongManagerId===null) {
+                            layer.alert("供应商所属管理员不可为空哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierName === null || vm.supplierName === "" || vm.supplierName.length < 2 || vm.supplierName.length > 200) {
+                            layer.alert("供应商名不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierPhone === null || vm.supplierPhone === "" || vm.supplierPhone.length !== 11) {
+                            layer.alert("电话11位哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierAddress === null || vm.supplierAddress === "" || vm.supplierAddress.length < 2 || vm.supplierAddress.length > 200) {
+                            layer.alert("地址不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierMessage === null || vm.supplierMessage === "" || vm.supplierMessage.length < 2 || vm.supplierMessage.length > 200) {
+                            layer.alert("信息不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierEmail === null || vm.supplierEmail === "" || vm.supplierEmail.length < 2 || vm.supplierEmail.length > 100) {
+                            layer.alert("邮箱不可为空且长度在[2-100]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.supplierState === null || vm.supplierState === "" || (vm.supplierState !== "1" && vm.supplierState !== "0")) {
+                            layer.alert("状态只可以1/0哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");                      //开始axios通信
+                            var jsonD = {
+                                belongManagerId: vm.belongManagerId,
+                                supplierPhone: vm.supplierPhone,
+                                supplierName: vm.supplierName,
+                                supplierAddress: vm.supplierAddress,
+                                supplierMessage: vm.supplierMessage,
+                                supplierEmail: vm.supplierEmail,
+                                supplierState: vm.supplierState,
+                            }
+                            axios.post("../../../supplier/add", jsonD)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据新增成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+                    },
+                    // 获取管理员信息
+                    getManager() {
+                        axios.post("../../../manager/getManager")
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.managerId = response.data.data.managerId;
+                                    vm.managerName = response.data.data.managerName
+                                    vm.managerPassword = response.data.data.managerPassword
+                                    vm.managerRealName = response.data.data.managerRealName
+                                    vm.managerSex = response.data.data.managerSex
+                                    vm.managerPhone = response.data.data.managerPhone
+                                    vm.managerState = response.data.data.managerState
+                                    vm.managerLevel = response.data.data.managerLevel
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+                    },
+                    getAllNormalManagers() {
+                        axios.post("../../../manager/getAllNormalManagers")
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.normalManagerList = response.data.data;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    }
+                },
+                mounted: function () {
+                    //查询管理员信息
+                    this.getManager();
+                    //查询所有普通管理员的信息
+                    this.getAllNormalManagers();
+                }
+            });
+        </script>
+    </body>
+
+</html>

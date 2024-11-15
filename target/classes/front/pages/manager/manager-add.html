@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>管理员-新增</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>用户名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_username" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="managerName"></div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_pass" class="layui-form-label">
+                        <span class="x-red">*</span>密码</label>
+                    <div class="layui-input-inline">
+                        <input type="password" id="L_pass" name="pass" required="" lay-verify="pass"
+                               autocomplete="off" class="layui-input"
+                               v-model="managerPassword"></div>
+                    <div class="layui-form-mid layui-word-aux">6到20个字符</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>真实姓名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="realName" autocomplete="off"
+                               class="layui-input"
+                               v-model="managerRealName">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>性别</label>
+
+
+                    <div class="layui-input-inline">
+                        <select v-model="managerSex" style="width:190px; height: 30px; border: grey">
+                            <option>男</option>
+                            <option>女</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>手机</label>
+                    <div class="layui-input-inline">
+                        <input type="text" required="" lay-verify="phone" autocomplete="off"
+                               class="layui-input"
+                               v-model="managerPhone">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">11位电话</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>状态</label>
+                    <div class="layui-input-inline">
+                        <select v-model="managerState" style="width:190px; height: 30px; border: grey">
+                            <option>1</option>
+                            <option>0</option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">1启用 / 0禁用</div>
+                </div>
+
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="add">增加</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    //管理员信息
+                    managerId: null,
+                    managerName: null,
+                    managerPassword: null,
+                    managerRealName: null,
+                    managerSex: null,
+                    managerPhone: null,
+                    managerState: null,
+                    managerLevel: null,
+                    //分页属性
+
+                },
+                methods: {
+                    add() {
+                        //首先校验数据合法性
+                        if (vm.managerName === null || vm.managerName === "" || vm.managerName.length < 2 || vm.managerName.length > 20) {
+                            layer.alert("用户名不可为空且长度在[2-20]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.managerPassword === null || vm.managerPassword === "" || vm.managerPassword.length < 6 || vm.managerPassword.length > 20) {
+                            layer.alert("密码不可为空且长度在[6-20]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.managerRealName === null || vm.managerRealName === "" || vm.managerRealName.length < 2 || vm.managerRealName.length > 20) {
+                            layer.alert("真实姓名不可为空且长度在[2-20]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.managerSex === null || vm.managerSex === "" || (vm.managerSex !== "男" && vm.managerSex !== "女")) {
+                            layer.alert("性别只可以男/女哦", {
+                                icon: 6
+                            })
+                        } else if (vm.managerPhone === null || vm.managerPhone === "" || vm.managerPhone.length !== 11) {
+                            layer.alert("电话11位哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");                      //开始axios通信
+                            var jsonD = {
+                                managerName: vm.managerName,
+                                managerPassword: vm.managerPassword,
+                                managerRealName: vm.managerRealName,
+                                managerSex: vm.managerSex,
+                                managerPhone: vm.managerPhone,
+                                managerState: vm.managerState
+                            }
+                            axios.post("../../../manager/add", jsonD)
+                                .then(function (response) {
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据新增成功", {
+                                            icon: 6
+                                        })
+                                        //开始提示头像框
+                                        xadmin.open('选择用户头像','./manager-image.html',400,270);
+                                        /*
+                                        *
+                                       <button
+                                            class="layui-btn"
+                                            v-show="managerLevel===0"
+                                            onclick="xadmin.open('添加用户','./manager-add.html',600,400)">
+                                            <i class="layui-icon"></i>添加
+                                        </button>
+                                        * */
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+
+
+                    }
+                }
+
+            });
+        </script>
+    </body>
+
+</html>

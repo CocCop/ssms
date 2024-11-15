@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>商品-编辑</title>
+        <meta name="renderer" content="webkit">
+        <link rel="stylesheet" href="../../css/font.css"/>
+        <link rel="stylesheet" href="../../css/xadmin.css"/>
+        <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../../js/xadmin.js"></script>
+        <script src="../../js/vue2.7min.js"></script>
+        <script src="../../js/axios.min.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid" id="app">
+            <div class="layui-row">
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>商品名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_username1" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="goodsName"></div>
+                    <div class="layui-form-mid layui-word-aux">2到20个字符
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>所属供应商信息</label>
+                    <div class="layui-input-inline">
+                        <select v-model="goodsSupplierId" style="width:190px; height: 30px; border: grey">
+                            <option v-for="ss in supplierList" :value="ss.supplierId">
+                                id:&nbsp;{{ ss.supplierId }} &nbsp;&nbsp; name:&nbsp;{{ss.supplierName}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>商品价格</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_usernam2e" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="goodsPrice"></div>
+                    <div class="layui-form-mid layui-word-aux">商品价格</div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>商品信息</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_userna3me" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="goodsMessage"></div>
+                    <div class="layui-form-mid layui-word-aux">2到200个字符</div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label for="L_username" class="layui-form-label">
+                        <span class="x-red">*</span>商品地址</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="L_username" required="" lay-verify="name" autocomplete="off"
+                               class="layui-input"
+                               v-model="goodsAddress"></div>
+                    <div class="layui-form-mid layui-word-aux">2到200个字符</div>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" @click="edit">修改</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-submit="" onClick="javascript :history.back(-1);">返回上一页</button>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    //商品信息
+                    goodsId: null,
+                    goodsName: null,
+                    goodsSupplierId: null,
+                    goodsPrice: null,
+                    goodsMessage: null,
+                    goodsAddress: null,
+                    //管理员名下所有供应商的信息
+                    supplierList: null,
+
+                },
+                methods: {
+                    //获取url参数
+                    url1(name) {
+                        //获取上一地址中的get参数
+                        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                        var r = window.location.search.substr(1).match(reg);
+                        if (r != null)
+                            return unescape(r[2]);
+                        return null;
+                    },
+                    getAllSuppliersByLevel() {
+                        axios.post("../../../supplier/getAllSuppliersByLevel")
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.supplierList = response.data.data;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    },
+                    edit() {
+                        //首先校验数据合法性
+                        if (vm.goodsName === null || vm.goodsName === "" || vm.goodsName.length < 2 || vm.goodsName.length > 200) {
+                            layer.alert("商品不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.goodsPrice === null || vm.goodsPrice === "") {
+                            layer.alert("价格不可为空", {
+                                icon: 6
+                            })
+                        } else if (vm.goodsMessage === null || vm.goodsMessage === "" || vm.goodsMessage.length < 2 || vm.goodsMessage.length > 200) {
+                            layer.alert("信息不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else if (vm.goodsAddress === null || vm.goodsAddress === "" || vm.goodsAddress.length < 2 || vm.goodsAddress.length > 200) {
+                            layer.alert("地址不可为空且长度在[2-200]哦", {
+                                icon: 6
+                            })
+                        } else {
+                            console.log("开始上传数据");
+                            //开始axios通信
+                            var jsonD = {
+                                goodsId: vm.goodsId,
+                                goodsName: vm.goodsName,
+                                goodsPrice: vm.goodsPrice,
+                                goodsAddress: vm.goodsAddress,
+                                goodsMessage: vm.goodsMessage,
+                                goodsSupplierId: vm.goodsSupplierId,
+                            }
+                            axios.post("../../../goods/editById", jsonD)
+                                .then(function (response) {
+                                    //数据保存到vue全局
+                                    console.log(response)
+                                    if (response.data.code === 1) {
+                                        layer.alert("数据编辑成功", {
+                                            icon: 6
+                                        })
+                                    }
+                                }, function (err) {
+                                    console.log(err);
+
+                                })
+                        }
+                    },
+                    getGoodsById(aimId) {
+                        var jsonD = {
+                            id: aimId
+                        }
+                        axios.post("../../../goods/getGoodsById", jsonD)
+                            .then(function (response) {
+                                //数据保存到vue全局
+                                if (response.data.code === 1) {
+                                    //Manager信息
+                                    vm.goodsId = response.data.data.goodsId;
+                                    vm.goodsName = response.data.data.goodsName;
+                                    vm.goodsPrice = response.data.data.goodsPrice;
+                                    vm.goodsAddress = response.data.data.goodsAddress;
+                                    vm.goodsMessage = response.data.data.goodsMessage;
+                                    vm.goodsSupplierId = response.data.data.goodsSupplierId;
+                                }
+                            }, function (err) {
+                                console.log(err);
+
+                            })
+
+                    },
+                },
+                mounted: function () {
+                    //获取管理员名下所有供应商的信息
+                    this.getAllSuppliersByLevel();
+                    //获取要求改的目标商品Goods信息
+                    this.getGoodsById(this.url1("id"));
+                }
+            });
+        </script>
+    </body>
+
+</html>
